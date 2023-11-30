@@ -1,3 +1,27 @@
-# Mood-Recognition-and-Analysis-Using-Driver-s-Face-Video-in-Mobile-Computing
-Group 47
-Learn about a contextually aware technology that uses facial recognition to continuously assess a driver's attentiveness and mood, improving road safety. In order to prevent accidents, the system modifies its responses in real-time in response to variables including weather, traffic, and road conditions. It does this by initiating the proper interventions, such as auto-parking mode and reminders.
+
+# Android App for Project 5
+
+This Android module is a part of the Project-5 - "Monitoring and Analysing Driver and Driving conditions through video/sensory inputs".
+
+
+## Features and Responsibilities
+
+- Record driver's vitals
+- Continuous monitoring of the driver
+- Sending the images to the server and getting back the results
+- Depending on the paramters recieved, take the appropriate actions
+- Actions include sounding an alarm, sending a pop-up, etc.
+
+
+
+## Tech Stack
+
+Android Studio, Kotlin
+
+
+## Running the Application
+
+To run this Android Application in Android Emulator or Android smart phone:
+
+- Download the  `app-debug.apk` file and install it. 
+- Copy all the files and make the apk in your Android Studio.
