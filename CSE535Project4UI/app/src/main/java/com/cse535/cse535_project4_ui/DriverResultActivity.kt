@@ -1,5 +1,8 @@
 package com.cse535.cse535_project4_ui
 
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.TableLayout
@@ -9,9 +12,13 @@ import androidx.activity.ComponentActivity
 
 class DriverResultActivity : ComponentActivity() {
 
+    private var mediaPlayer: MediaPlayer? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.driver_result_activity)
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.alarm)
 
         val driverResultTextView : TextView = findViewById(R.id.distractionStatusTextView)
         val tableLayout = findViewById<TableLayout>(R.id.driverResultTable)
@@ -33,6 +40,11 @@ class DriverResultActivity : ComponentActivity() {
                     tableLayout.addView(dataRow)
                 }
             }
+
+            val valuesForKey = dataMap["Distraction"]
+            if (valuesForKey != null && valuesForKey.contains("distracted")) {
+                soundAlarm();
+            }
         }
 
         // Create headers row
@@ -44,6 +56,44 @@ class DriverResultActivity : ComponentActivity() {
         }
         tableLayout.addView(headersRow)
 
+    }
+
+    private fun soundAlarm() {
+        startAlarm();
+        // Dialog:
+        val builder = AlertDialog.Builder(this)
+
+        // Set the dialog title and message
+        builder.setTitle("Popup Dialog")
+            .setMessage("Warning! You appear to be sleepy. Be attentive.")
+
+        // Add a button to close the dialog
+        builder.setPositiveButton("Close") { dialog: DialogInterface, _: Int ->
+            // You can perform actions here if needed
+            dialog.dismiss()
+            stopAlarm()
+        }
+
+        // Create and show the dialog
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+    }
+
+    // Function to start the alarm sound
+    private fun startAlarm() {
+        mediaPlayer?.start()
+    }
+
+    // Function to stop the alarm sound
+    private fun stopAlarm() {
+        mediaPlayer?.stop()
+        mediaPlayer?.prepare()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Release the MediaPlayer when the activity is destroyed
+        mediaPlayer?.release()
     }
 
     private fun createTextView(text: String, isHeader: Boolean): TextView {
