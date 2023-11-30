@@ -1,0 +1,14 @@
+function[switch_or_not] = KiranmaiMrudula_Vardhiboyina_project4(drowsy,distracted,road_conditions)
+fis = readfis('KiranmaiMrudulaVardhiboyinaproject4.fis');
+fisInput = [drowsy,road_conditions,distracted];
+level_of_distraction = evalfis(fis, fisInput);
+
+if level_of_distraction<= 0.5
+    switch_or_not=0;
+  %no switch to auto mode required
+else
+    switch_or_not=1;
+    %auto switch required
+end
+
+
