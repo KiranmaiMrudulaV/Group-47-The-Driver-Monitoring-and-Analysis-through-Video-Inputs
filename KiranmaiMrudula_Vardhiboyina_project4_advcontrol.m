@@ -1,12 +1,12 @@
-%function[outputswitch] = KiranmaiMrudula_Vardhiboyina_project4_advcontrol(drowsy,distracted,road_conditons,hr,rr)
+function[outputswitch] = KiranmaiMrudula_Vardhiboyina_project4_advcontrol(drowsy,distracted,road_conditons,hr,rr)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %input
-drowsy=1;%values range[0 1]
-distracted=0.9;%values range[0 1]
-road_conditions=0;%values range[0 1]
-hr=80;
-rr=6;
-tr=0.01*(hr/rr);
+%drowsy=1;%values range[0 1]
+%distracted=0.9;%values range[0 1]
+%road_conditions=0;%values range[0 1]
+%hr=80;
+%rr=6;
+%tr=0.01*(hr/rr);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Gain = 100000; %default gain value
