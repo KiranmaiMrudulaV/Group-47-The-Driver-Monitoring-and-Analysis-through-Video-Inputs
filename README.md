@@ -35,8 +35,8 @@ use inference.py to detect if the driver is detected
 
 I have uploaded the notebooks to kaggle, to run the training and inference notebooks just go to below links, click copy and edit and then click run all you'll see the inference results.
 
-[Kaggle Inference Link](https://www.kaggle.com/code/vineethkanaparthi/ddd-inference/notebook)
-[Kaggle Training Link](https://www.kaggle.com/code/vineethkanaparthi/ddd-fastaiv3)
+- [Kaggle Inference Link](https://www.kaggle.com/code/vineethkanaparthi/ddd-inference/notebook)
+- [Kaggle Training Link](https://www.kaggle.com/code/vineethkanaparthi/ddd-fastaiv3)
 
 ## Repository Structure:
 
