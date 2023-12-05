@@ -28,7 +28,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -56,6 +55,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.HashMap
+import com.google.firebase.database.*
+import okhttp3.MediaType
+import java.util.UUID
 
 interface ApiService {
 
@@ -63,7 +65,8 @@ interface ApiService {
     @POST
     fun uploadImage(
         @Url url: String,
-        @Part image: MultipartBody.Part
+        @Part image: MultipartBody.Part,
+        @Part("id") id: RequestBody
     ): Call<ResponseBody>
 }
 
@@ -71,6 +74,11 @@ class MainActivity : ComponentActivity() {
 
     private val REQUEST_VIDEO_CAPTURE = 1
     private val CAMERA_PERMISSION_REQUEST_CODE = 101
+
+    private lateinit var database: FirebaseDatabase
+    private lateinit var reference: DatabaseReference
+    public val responseMap: HashMap<String, MutableList<String>> = HashMap()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,6 +135,47 @@ class MainActivity : ComponentActivity() {
                     startButton.isEnabled = true;
             }
         }
+
+        // Initialize Firebase
+        database = FirebaseDatabase.getInstance()
+        reference = database.getReference("/")
+
+        val keys = listOf("Distraction", "Emotion", "Workload")
+        for (key in keys) {
+            responseMap[key] = mutableListOf()
+        }
+
+        // Add a ValueEventListener to continuously listen for changes
+        reference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // This method will be called whenever data at the specified location changes
+                // dataSnapshot contains the current data at the specified database location
+                for (recordSnapshot in dataSnapshot.children) {
+                    val record = recordSnapshot.getValue(FirebaseRecordClass::class.java)
+                    // Process the record as needed
+
+                    if (record != null) {
+                        if (record.UUID in ApiClient.uuidList) {
+                            val list = responseMap["Distraction"]
+                            record.distraction?.let { list?.add(it) }
+
+                            val list1 = responseMap["Emotion"]
+                            record.emotion?.let { list1?.add(it) }
+                            val list2 = responseMap["Workload"]
+                            record.workload?.let { list2?.add(it) }
+
+                            DataHolder.responseMap.postValue(responseMap)
+                            ApiClient.uuidList.remove(record.UUID)
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors or cleanup operations
+            }
+        })
+
     }
 
     object ApiClient {
@@ -135,7 +184,7 @@ class MainActivity : ComponentActivity() {
 
         private var retrofit: Retrofit? = null
 
-        public val responseMap: HashMap<String, MutableList<String>> = HashMap()
+        public val uuidList = mutableListOf<String>()
 
         private fun getRetrofitInstance(): Retrofit {
             if (retrofit == null) {
@@ -154,6 +203,10 @@ class MainActivity : ComponentActivity() {
             return retrofit!!
         }
 
+        fun generateRandomUUID(): String {
+            return UUID.randomUUID().toString()
+        }
+
         fun uploadImage(bitmap: Bitmap) {
             // Convert Bitmap to byte array
             val byteArrayOutputStream = ByteArrayOutputStream()
@@ -170,14 +223,12 @@ class MainActivity : ComponentActivity() {
             // Create API service instance
             val apiService: ApiService = getRetrofitInstance().create(ApiService::class.java)
 
-            val keys = listOf("Distraction", "Emotion", "Workload")
-            for (key in keys) {
-                responseMap[key] = mutableListOf()
-            }
-
+            val genratedUUID = generateRandomUUID();
+            uuidList.add(genratedUUID)
             // Make the API call
-            val call: Call<ResponseBody> = apiService.uploadImage(BASE_URL + "distraction", body)
-            call.enqueue(object : Callback<ResponseBody> {
+            val callDistraction: Call<ResponseBody> = apiService.uploadImage(BASE_URL + "distraction", body, RequestBody.create(
+                "text/plain".toMediaTypeOrNull(), genratedUUID))
+            callDistraction.enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
                         // Handle success
@@ -193,10 +244,10 @@ class MainActivity : ComponentActivity() {
                                 val jsonObject = jsonElement.asJsonObject
                                 // Access JSON fields using jsonObject.get("fieldName")
                                 // Example: val value = jsonObject.get("key1").asString
-                                val isDriverDistracted = jsonObject.get("prediction").asString
-                                val list = responseMap["Distraction"]
-                                list?.add(isDriverDistracted)
-                                DataHolder.responseMap.postValue(responseMap)
+//                                val isDriverDistracted = jsonObject.get("prediction").asString
+//                                val list = responseMap["Distraction"]
+//                                list?.add(isDriverDistracted)
+//                                DataHolder.responseMap.postValue(responseMap)
                             } else if (jsonElement.isJsonArray) {
                                 val jsonArray = jsonElement.asJsonArray
                                 // Access elements in the JSON array
@@ -213,67 +264,88 @@ class MainActivity : ComponentActivity() {
                     // Log error or show an error message
                 }
             })
-        }
 
-//        suspend fun uploadImage(bitmap: Bitmap): HashMap<String, MutableList<String>> {
-//            return withContext(Dispatchers.IO) {
-//                // Convert Bitmap to byte array
-//                val byteArrayOutputStream = ByteArrayOutputStream()
-//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-//                val byteArray = byteArrayOutputStream.toByteArray()
-//                val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
-//
-//                // Create RequestBody from the encoded image
-//                val imageBody = RequestBody.create("text/plain".toMediaTypeOrNull(), encodedImage)
-//
-//                // Create MultipartBody.Part using the image request body
-//                val body = MultipartBody.Part.createFormData("image", "image.png", imageBody)
-//
-//                // Create API service instance
-//                val apiService: ApiService = getRetrofitInstance().create(ApiService::class.java)
-//
-//                val keys = listOf("Distraction", "Emotion", "Workload")
-//                for (key in keys) {
-//                    responseMap[key] = mutableListOf()
-//                }
-//
-//                // Make the API call
-//                try {
-//                    val response: Response<ResponseBody> = apiService.uploadImage(BASE_URL + "distraction", body)
-//                    if (response.isSuccessful) {
-//                        // Handle success
-//                        // Do something with the response
-//                        val responseBody = response.body()?.string()
-//                        if (!responseBody.isNullOrEmpty()) {
-//                            // Parse the JSON using Gson
-//                            val gson = Gson()
-//                            val jsonElement: JsonElement = gson.fromJson(responseBody, JsonElement::class.java)
-//
-//                            // Now you can work with the JsonElement
-//                            if (jsonElement.isJsonObject) {
-//                                val jsonObject = jsonElement.asJsonObject
-//                                // Access JSON fields using jsonObject.get("fieldName")
-//                                // Example: val value = jsonObject.get("key1").asString
+            val callEmotion: Call<ResponseBody> = apiService.uploadImage(BASE_URL + "emotion", body, RequestBody.create(
+                "text/plain".toMediaTypeOrNull(), genratedUUID))
+            callEmotion.enqueue(object : Callback<ResponseBody> {
+                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                    if (response.isSuccessful) {
+                        // Handle success
+                        // Do something with the response
+                        val responseBody = response.body()?.string()
+                        if (!responseBody.isNullOrEmpty()) {
+                            // Parse the JSON using Gson
+                            val gson = Gson()
+                            val jsonElement: JsonElement = gson.fromJson(responseBody, JsonElement::class.java)
+
+                            // Now you can work with the JsonElement
+                            if (jsonElement.isJsonObject) {
+                                val jsonObject = jsonElement.asJsonObject
+                                // Access JSON fields using jsonObject.get("fieldName")
+                                // Example: val value = jsonObject.get("key1").asString
 //                                val isDriverDistracted = jsonObject.get("prediction").asString
-//                                val list = responseMap["Distraction"]
+//                                val list = responseMap["Emotion"]
 //                                list?.add(isDriverDistracted)
-//                            } else if (jsonElement.isJsonArray) {
-//                                val jsonArray = jsonElement.asJsonArray
-//                                // Access elements in the JSON array
-//                            }
-//                        }
-//                    } else {
-//                        // Handle error
-//                        // Log error or show an error message
-//                    }
-//                } catch (t: Throwable) {
-//                    // Handle failure
-//                    // Log error or show an error message
-//                }
-//
-//                responseMap // or whatever data you want to return
-//            }
-//        }
+//                                DataHolder.responseMap.postValue(responseMap)
+                            } else if (jsonElement.isJsonArray) {
+                                val jsonArray = jsonElement.asJsonArray
+                                // Access elements in the JSON array
+                            }
+                        }
+                    } else {
+                        // Handle error
+                        // Log error or show an error message
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    // Handle failure
+                    // Log error or show an error message
+                }
+            })
+
+            val callWorkload: Call<ResponseBody> = apiService.uploadImage(BASE_URL + "workload", body, RequestBody.create(
+                "text/plain".toMediaTypeOrNull(), genratedUUID))
+            callWorkload.enqueue(object : Callback<ResponseBody> {
+                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                    if (response.isSuccessful) {
+                        // Handle success
+                        // Do something with the response
+                        val responseBody = response.body()?.string()
+                        if (!responseBody.isNullOrEmpty()) {
+                            // Parse the JSON using Gson
+                            val gson = Gson()
+                            val jsonElement: JsonElement = gson.fromJson(responseBody, JsonElement::class.java)
+
+                            // Now you can work with the JsonElement
+                            if (jsonElement.isJsonObject) {
+                                val jsonObject = jsonElement.asJsonObject
+                                // Access JSON fields using jsonObject.get("fieldName")
+                                // Example: val value = jsonObject.get("key1").asString
+//                                val isDriverDistracted = jsonObject.get("prediction").asString
+//                                val list = responseMap["Workload"]
+//                                list?.add(isDriverDistracted)
+//                                DataHolder.responseMap.postValue(responseMap)
+                            } else if (jsonElement.isJsonArray) {
+                                val jsonArray = jsonElement.asJsonArray
+                                // Access elements in the JSON array
+                            }
+                        }
+                    } else {
+                        // Handle error
+                        // Log error or show an error message
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    // Handle failure
+                    // Log error or show an error message
+                }
+            })
+
+
+
+        }
     }
 
     // Respiratory Reading Code:
@@ -526,11 +598,9 @@ class MainActivity : ComponentActivity() {
 
             // Upload each frame to the API
             var responseMapReturned : HashMap<String, MutableList<String>> = HashMap()
-//            GlobalScope.launch(Dispatchers.Main) {
             frames.forEach { frame ->
                 ApiClient.uploadImage(frame)
             }
-//            }
 
             // Spawn New Intent:
             val driverActivityIntent = Intent(this@MainActivity, DriverResultActivity::class.java)
