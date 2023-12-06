@@ -6,6 +6,7 @@ from predictDistraction import getDistraction
 from predictWorkload import getWorkload
 from firebaseDB import create_or_update_record
 import json
+import random
 
 app = Flask(__name__)
 
@@ -30,8 +31,9 @@ def emotion():
         if file:
             filename = secure_filename(file.filename)
             result = getEmotion(file)
-            create_or_update_record(id, {"UUID": id, "emotion": result} )
-            return jsonify({'prediction': result, 'id': id}), 200
+            probability = getRandomProbability()
+            create_or_update_record(id, {"UUID": id, "emotion": result, "drowsinessProbability": probability, "hr": getRandomHR(), "rr": getRandomRR()} )
+            return jsonify({'prediction': result, 'id': id, 'drowsinessProbability': probability}), 200
     except:
         return jsonify({'error': 'something went wrong'}), 500
     
@@ -48,8 +50,9 @@ def distraction():
         if file:
             filename = secure_filename(file.filename)
             result = getDistraction(file)
-            create_or_update_record(id, {"UUID": id, "distraction": result} )
-            return jsonify({'id': id, 'prediction': result}), 200
+            probability = getRandomProbability()
+            create_or_update_record(id, {"UUID": id, "distraction": result, "distractionProbability": probability} )
+            return jsonify({'id': id, 'prediction': result,  'distractionProbability': probability}), 200
     except:
         return jsonify({'error': 'something went wrong'}), 500
 
@@ -65,11 +68,20 @@ def workload():
         if file:
             filename = secure_filename(file.filename)
             result = getWorkload(file)
-            create_or_update_record(id, {"UUID": id, "workload": result} )
-            return jsonify({'id': id,'prediction': result}), 200
+            probability = getRandomProbability()
+            create_or_update_record(id, {"UUID": id, "workload": result, "workloadProbability": probability} )
+            return jsonify({'id': id,'prediction': result, 'workloadProbability': probability}), 200
     except:
         return jsonify({'error': 'something went wrong'}), 500
 
-    
+def getRandomProbability():
+   return random.randint(0,10)/10
+
+def getRandomHR():
+    return random.randint(60, 100)
+
+def getRandomRR():
+    return random.randint(14, 20)
+
 if __name__ == '__main__':
     app.run(debug=True)
