@@ -1,0 +1,4 @@
+<!-- A simple example with a different solid color background for data rows -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#ecf0f1" /> <!-- Change color as needed -->
+</shape>
