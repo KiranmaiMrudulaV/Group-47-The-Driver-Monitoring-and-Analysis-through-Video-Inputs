@@ -1,12 +1,15 @@
-function[outputswitch] = KiranmaiMrudula_Vardhiboyina_project4_advcontrol(drowsy,distracted,road_conditons,hr,rr)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%input
-%drowsy=1;%values range[0 1]
-%distracted=0.9;%values range[0 1]
-%road_conditions=0;%values range[0 1]
-%hr=80;
-%rr=6;
-%tr=0.01*(hr/rr);
+%  Inputs from firebase real-time database 
+firebaseUrl_ = 'https://cse535project4ui-default-rtdb.firebaseio.com/recordab.json';
+
+record_json = webread(firebaseUrl_,optionsGet);
+
+drowsy = record_json.drowsinessProbability;
+distracted= record_json.distractionProbability;
+road_conditions=record_json.workloadProbability;
+hr=record_json.hr;
+rr=record_json.rr;
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Gain = 100000; %default gain value
@@ -14,7 +17,7 @@ initSpeed=40;% init speed default value
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+tr=0.01*(hr/rr);%calculating reaction time
 
 decelLim=(-1)*( 200 * road_conditions + 150 * (1-road_conditions));%setting decel limit
 
@@ -68,11 +71,11 @@ if sx1_data(end)>=0% if collision
             
             fprintf( "collision is inevitable even though switched to human" );
 
-            outputswitch=0;
+            outputswitch='collision is inevitable even though switched to human';
     
         else %collison not happened
             
-            outputswitch=1;
+            outputswitch='switch to human';
             fprintf( "switch to human" );
         end  
 
@@ -81,7 +84,7 @@ if sx1_data(end)>=0% if collision
 
         %level of danger is high so dont switch
 
-            outputswitch=2;
+            outputswitch='collision is inevitable because level of danger is high';
             fprintf( "collision is inevitable because level of danger is high" );
             
 
@@ -90,17 +93,30 @@ if sx1_data(end)>=0% if collision
 
 else
 
-    outputswitch=3;
+    outputswitch='No collision';
     fprintf( "No collision" );
 end
 
 
+% sending output back to firebase and android
 
+firebaseURL_output = 'https://cse535project4ui-default-rtdb.firebaseio.com/Matlab_Results.json';
 
+% Commenting the output string to of having switch for now for testing. This will be coming from fuzzy logic controller.
 
+data = struct('Advisory_Control_Decision', outputswitch); 
 
+options = weboptions('MediaType', 'application/json', 'RequestMethod', 'put');
 
+try
+    response_json = webwrite(firebaseURL_output, data, options);
+    disp('Data successfully sent to firebase.');
+    disp(response_json); 
+catch e
+    disp('Error sending data');
 
+    disp(getReport(e));
+end
 
 
 
