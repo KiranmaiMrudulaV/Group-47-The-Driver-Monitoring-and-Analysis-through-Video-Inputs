@@ -185,7 +185,7 @@ class MainActivity : ComponentActivity() {
 
     object ApiClient {
 
-        private const val BASE_URL = "http://54.151.53.17/"
+        private const val BASE_URL = "http://13.57.240.107/"
 
         private var retrofit: Retrofit? = null
 
@@ -598,7 +598,7 @@ class MainActivity : ComponentActivity() {
             // Handle the recorded video, e.g., save it or play it
 //            val videoFilePath = getCapturedVideoPath(data)  // Replace with the actual path of your video file
             val videoFilePath = "/storage/emulated/0/Movies/CapturedVideos/$mediaFileName"
-            val apiUrl = "http://54.151.53.17/distraction"
+            val apiUrl = "http://13.57.240.107/distraction"
             val frames = extractFrames(videoFilePath, 2)
 
             // Upload each frame to the API
