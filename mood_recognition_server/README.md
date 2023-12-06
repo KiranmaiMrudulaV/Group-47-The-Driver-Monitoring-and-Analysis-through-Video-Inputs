@@ -71,10 +71,10 @@ This Flask web server provides a simple API for emotion recognition, distraction
 ```
 Here are the endpoints
 
-http://54.151.53.17/
-http://54.151.53.17/distraction
-http://54.151.53.17/emotion
-http://54.151.53.17/workload
+http://13.57.240.107/
+http://13.57.240.107/distraction
+http://13.57.240.107/emotion
+http://13.57.240.107/workload
 
 ``` 
 - You can easily test the above endpoints using postman
