@@ -22,7 +22,7 @@ The primary goal of the Distracted Driver Detection System is to enhance safety 
 
 ### Key Features:
 - **Multi-Model Approach:** Utilizing a convolutional neural network (CNN), the system distinguishes between various distracted driving behaviors, including texting, talking on the phone, and more.
-  
+
 - **Integration with Guardian Angel Framework:** The distracted driver detection component seamlessly integrates into the broader Guardian Angel architecture, contributing to the overall safety decision-making process.
 
 - **Adaptive Strategies:** The system incorporates adaptive strategies such as transfer learning with pre-trained models and Leslie Smith's One Cycle Policy, optimizing performance and efficiency.
