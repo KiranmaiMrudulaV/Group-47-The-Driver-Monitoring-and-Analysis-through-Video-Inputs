@@ -78,6 +78,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var database: FirebaseDatabase
     private lateinit var reference: DatabaseReference
     public val responseMap: HashMap<String, MutableList<String>> = HashMap()
+//    public val uuidList = mutableListOf<String>()
+
+    companion object {
+        val uuidList = mutableListOf<String>()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -155,7 +160,7 @@ class MainActivity : ComponentActivity() {
                     // Process the record as needed
 
                     if (record != null) {
-                        if (record.UUID in ApiClient.uuidList) {
+                        if (record.UUID in uuidList) {
                             val list = responseMap["Distraction"]
                             record.distraction?.let { list?.add(it) }
 
@@ -165,7 +170,7 @@ class MainActivity : ComponentActivity() {
                             record.workload?.let { list2?.add(it) }
 
                             DataHolder.responseMap.postValue(responseMap)
-                            ApiClient.uuidList.remove(record.UUID)
+                            uuidList.remove(record.UUID)
                         }
                     }
                 }
@@ -180,11 +185,11 @@ class MainActivity : ComponentActivity() {
 
     object ApiClient {
 
-        private const val BASE_URL = "http://54.183.16.150/"
+        private const val BASE_URL = "http://54.151.53.17/"
 
         private var retrofit: Retrofit? = null
 
-        public val uuidList = mutableListOf<String>()
+//        public val uuidList = mutableListOf<String>()
 
         private fun getRetrofitInstance(): Retrofit {
             if (retrofit == null) {
@@ -224,7 +229,7 @@ class MainActivity : ComponentActivity() {
             val apiService: ApiService = getRetrofitInstance().create(ApiService::class.java)
 
             val genratedUUID = generateRandomUUID();
-            uuidList.add(genratedUUID)
+            MainActivity.uuidList.add(genratedUUID)
             // Make the API call
             val callDistraction: Call<ResponseBody> = apiService.uploadImage(BASE_URL + "distraction", body, RequestBody.create(
                 "text/plain".toMediaTypeOrNull(), genratedUUID))
@@ -593,7 +598,7 @@ class MainActivity : ComponentActivity() {
             // Handle the recorded video, e.g., save it or play it
 //            val videoFilePath = getCapturedVideoPath(data)  // Replace with the actual path of your video file
             val videoFilePath = "/storage/emulated/0/Movies/CapturedVideos/$mediaFileName"
-            val apiUrl = "http://54.183.16.150/distraction"
+            val apiUrl = "http://54.151.53.17/distraction"
             val frames = extractFrames(videoFilePath, 2)
 
             // Upload each frame to the API
