@@ -1,0 +1,43 @@
+{
+    "endpoints": {
+        "emotion_recognition": {
+            "endpoint": "/emotion",
+            "method": "POST",
+            "description": "Upload an image/video file and receive emotion prediction.",
+            "request": {
+                "form_data": "file (image/video file)"
+            },
+            "response": {
+                "json": {
+                    "prediction": "emotion_result"
+                }
+            }
+        },
+        "distraction_prediction": {
+            "endpoint": "/distraction",
+            "method": "POST",
+            "description": "Upload an image/video file and receive distraction prediction.",
+            "request": {
+                "form_data": "file (image/video file)"
+            },
+            "response": {
+                "json": {
+                    "prediction": "distraction_result"
+                }
+            }
+        },
+        "workload_prediction": {
+            "endpoint": "/workload",
+            "method": "POST",
+            "description": "Upload an image/video file and receive workload prediction.",
+            "request": {
+                "form_data": "file (image/video file)"
+            },
+            "response": {
+                "json": {
+                    "prediction": "workload_result"
+                }
+            }
+        }
+    }
+}
