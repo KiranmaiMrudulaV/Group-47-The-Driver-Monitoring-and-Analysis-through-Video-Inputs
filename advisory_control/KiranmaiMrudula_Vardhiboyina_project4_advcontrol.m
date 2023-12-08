@@ -1,5 +1,5 @@
 %  Inputs from firebase real-time database 
-firebaseUrl_ = 'https://cse535project4ui-default-rtdb.firebaseio.com/recordab.json';
+firebaseUrl_ = 'https://cse535project4ui-default-rtdb.firebaseio.com/172cdea9-1774-4c03-8404-b3b05183a3b7.json';
 
 record_json = webread(firebaseUrl_,optionsGet);
 
